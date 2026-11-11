@@ -33,7 +33,7 @@ development without anything else.
 - [8. Push the code to GitHub](#8-push-the-code-to-github)
 - [9. Troubleshooting](#9-troubleshooting)
 - [10. Project context (architecture & rules)](#10-project-context-architecture--rules)
-- [11. Known gap: the leave year never resets](#11-known-gap-the-leave-year-never-resets)
+- [11. Leave year](#11-leave-year)
 
 ---
 
@@ -345,45 +345,17 @@ PDF is produced via the browser's print dialog (**Save as PDF**), styled with
 
 ---
 
-## 11. Known gap: the leave year never resets
+## 11. Leave year
 
-**Balances are calculated over a person's entire history — there is no annual
-reset.** Not January, not April. The balance function sums *every* leave record
-ever logged:
+Balances (Sick bal / Casual bal / Comp) count only the current **leave year,
+1 April – 31 March**, and reset every 1 April. Reports and the roster show the
+balance for the leave year of the month being viewed.
 
-```js
-// shared/calc.js → balanceFromLeaves()
-for (const code of Object.values(leaveMap)) { ... }   // no date filter
-```
-
-So the 12 sick / 12 casual quota currently behaves as a **lifetime cap**. Someone
-who uses 12 casual days in 2026 will still show 0 casual balance in 2027.
-
-This contradicts the UI, which says "Sick leave **/ year**" and "**Annual** quota
-per member".
-
-Monthly figures *are* filtered correctly — the Dashboard's "Leaves this month"
-and the report's Sick/Casual/Comp columns are per-month. It's only the
-**balances** (Sick bal / Casual bal / Comp) that never reset.
-
-### To fix it
-Filter the leave map to the active leave year before summing, and show the period
-in the UI. For an Indian company you probably want the **financial year,
-1 April – 31 March**:
-
-```js
-// a date belongs to FY starting April
-function fyStart(dateStr) {
-  const [y, m] = dateStr.split('-').map(Number);
-  return m >= 4 ? y : y - 1;          // Apr 2026–Mar 2027 → 2026
-}
-// then: only count leaves where fyStart(date) === fyStart(today)
-```
-
-Decide these policies at the same time:
-- **Carry-forward** — do unused days lapse at year-end, or roll over (capped)?
-- **Comp-offs** — expire with the year, or persist until used?
-- **Mid-year joiners** — full quota, or pro-rated from their start date?
+- Nothing carries forward; unused days and comp-offs lapse at year-end.
+- Everyone gets the full quota (no pro-rating for mid-year joiners).
+- To use a calendar year, change `LEAVE_YEAR_START_MONTH` in `app/shared/calc.js`
+  **and** the matching `b>=4` in the compiled UI bundle (`function Hl`).
+- Tests: `cd app` then `npm test`.
 
 ---
 

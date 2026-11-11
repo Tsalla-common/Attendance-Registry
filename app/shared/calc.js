@@ -12,9 +12,26 @@ export function weekdayOf(dateStr) {
 export function monthLabel(y, m) { return `${MONTHS[m]} ${y}`; }
 export function monthPrefix(y, m) { return ds(y, m, 1).slice(0, 7); }
 
-export function balanceFromLeaves(leaveMap, quotas) {
+// Leave year runs 1 April – 31 March (Indian financial year). Change this one
+// number to 1 for a calendar year. The compiled UI (client/dist) carries its own
+// copy of this logic — keep the two in step.
+export const LEAVE_YEAR_START_MONTH = 4;
+export function leaveYearOf(dateStr) {
+  const [y, m] = dateStr.split('-').map(Number);
+  return m >= LEAVE_YEAR_START_MONTH ? y : y - 1;
+}
+function today() {
+  const d = new Date();
+  return ds(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+// Balances count only leaves in the leave year containing refDate (default: today),
+// so quotas reset each year. Nothing carries forward, comp-offs included.
+export function balanceFromLeaves(leaveMap, quotas, refDate = today()) {
+  const year = leaveYearOf(refDate);
   let sick = 0, casual = 0, comp = 0;
-  for (const code of Object.values(leaveMap || {})) {
+  for (const [date, code] of Object.entries(leaveMap || {})) {
+    if (leaveYearOf(date) !== year) continue;
     const m = LEAVE_CODES[code];
     if (!m) continue;
     if (m.kind === 'sick') sick += m.val;
@@ -53,7 +70,7 @@ export function buildReportRows({ people, leavesByPerson, holidays, year, month,
     }
     repTotal += sick + casual;
     repComp += comp;
-    const bal = balanceFromLeaves(L, quotas);
+    const bal = balanceFromLeaves(L, quotas, ds(year, month, 1));
     return {
       id: p.id, name: p.name, dept: p.dept,
       present: workingDays - sick - casual,
