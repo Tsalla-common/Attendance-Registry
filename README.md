@@ -1,2 +1,2 @@
-# attendance_repo_v2
-
+# Attendance-Registry
+App that is running locally to track attendance of people.
