@@ -1,0 +1,5 @@
+node_modules/
+Releases/
+*.zip
+# local SQLite database (real data, never commit)
+app/server/data/

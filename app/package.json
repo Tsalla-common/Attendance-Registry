@@ -1,0 +1,20 @@
+{
+  "name": "tsalla-attendance-console",
+  "productName": "Tsalla Attendance Console",
+  "version": "1.0.0",
+  "description": "Offline attendance, leave and holiday tracker.",
+  "author": "Tsalla Aerospace",
+  "private": true,
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "start": "node server/index.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.4.1",
+    "bcryptjs": "^2.4.3",
+    "exceljs": "^4.4.0",
+    "express": "^4.21.1",
+    "express-session": "^1.18.1"
+  }
+}
