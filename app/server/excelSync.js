@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { getSetting } from './db.js';
 import {
-  listPeople, listHolidaysMap, allLeavesMap, balanceFor,
+  listPeople, listHolidaysMap, allLeavesMap, balanceFor, balanceFromLeaves,
   daysInMonth, ds, weekdayOf, monthLabel, monthPrefix, LEAVE_CODES,
 } from './calc.js';
 
@@ -96,7 +96,8 @@ function buildMonthSheet(wb, year, month, people, holidays, leavesByPerson, quot
         dayVals.push('');
       }
     }
-    const row = sheet.addRow([p.name, p.dept, p.role, ...dayVals, workingDays - sick - casual, sick, casual, comp, quotas.sick - sick, quotas.casual - casual]);
+    const bal = balanceFromLeaves(L, quotas, ds(year, month, 1));
+    const row = sheet.addRow([p.name, p.dept, p.role, ...dayVals, workingDays - sick - casual, sick, casual, comp, bal.sRem, bal.cRem]);
     for (let d = 1; d <= n; d++) {
       const dateStr = ds(year, month, d);
       const dow = new Date(year, month, d).getDay();

@@ -353,6 +353,10 @@ balance for the leave year of the month being viewed.
 
 - Nothing carries forward; unused days and comp-offs lapse at year-end.
 - Everyone gets the full quota (no pro-rating for mid-year joiners).
+- **Month-wise sick leave** (Settings → Leave entitlements checkbox, off by
+  default): each month allows the yearly sick figure ÷ 12, counted against that
+  month only, so unused sick leave does not carry over to the next month.
+  Casual leave stays yearly. Stored as `quotas.sickMonthly`.
 - To use a calendar year, change `LEAVE_YEAR_START_MONTH` in `app/shared/calc.js`
   **and** the matching `b>=4` in the compiled UI bundle (`function Hl`).
 - Tests: `cd app` then `npm test`.

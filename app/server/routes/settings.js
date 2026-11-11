@@ -37,6 +37,7 @@ router.put('/', (req, res) => {
     setSetting('quotas', {
       sick: Math.max(0, Number(quotas.sick ?? current.sick) || 0),
       casual: Math.max(0, Number(quotas.casual ?? current.casual) || 0),
+      sickMonthly: Boolean(quotas.sickMonthly ?? current.sickMonthly),
     });
   }
   syncExcel();

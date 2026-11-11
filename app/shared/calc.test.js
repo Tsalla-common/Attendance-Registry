@@ -27,3 +27,14 @@ test('report balance uses the leave year of the report month', () => {
   assert.equal(buildReportRows({ ...args, year: 2026, month: 2 }).rows[0].cRem, 11);  // Mar 2026 → FY25
   assert.equal(buildReportRows({ ...args, year: 2027, month: 2 }).rows[0].sRem, 10.5); // Mar 2027 → FY26
 });
+
+test('month-wise sick leave: yearly / 12 per month, nothing carries over', () => {
+  const m = { sick: 12, casual: 12, sickMonthly: true };
+  // Dec 2026: half a day used of 1
+  assert.deepEqual(balanceFromLeaves(leaves, m, '2026-12-20'), { sick: 0.5, casual: 1, comp: 0, sRem: 0.5, cRem: 11 });
+  // Jan 2027: fresh 1, December's unused half is gone; casual stays yearly
+  assert.deepEqual(balanceFromLeaves(leaves, m, '2027-01-05'), { sick: 0, casual: 1, comp: 0, sRem: 1, cRem: 11 });
+  // over-use in a month goes negative rather than borrowing from other months
+  assert.equal(balanceFromLeaves({ '2026-06-01': 'SF', '2026-06-02': 'SF' }, m, '2026-06-15').sRem, -1);
+  assert.equal(balanceFromLeaves({}, { sick: 10, casual: 12, sickMonthly: true }, '2026-06-15').sRem, 0.83);
+});

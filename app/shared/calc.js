@@ -27,18 +27,23 @@ function today() {
 
 // Balances count only leaves in the leave year containing refDate (default: today),
 // so quotas reset each year. Nothing carries forward, comp-offs included.
+// quotas.sickMonthly (Settings toggle): sick leave is month-wise — the allowance
+// is quotas.sick / 12 per month, counted against refDate's month only, so unused
+// sick leave does not carry over to the next month.
 export function balanceFromLeaves(leaveMap, quotas, refDate = today()) {
   const year = leaveYearOf(refDate);
+  const month = refDate.slice(0, 7);
   let sick = 0, casual = 0, comp = 0;
   for (const [date, code] of Object.entries(leaveMap || {})) {
     if (leaveYearOf(date) !== year) continue;
     const m = LEAVE_CODES[code];
     if (!m) continue;
-    if (m.kind === 'sick') sick += m.val;
+    if (m.kind === 'sick') { if (!quotas.sickMonthly || date.startsWith(month)) sick += m.val; }
     else if (m.kind === 'casual') casual += m.val;
     else if (m.kind === 'comp') comp += 1;
   }
-  return { sick, casual, comp, sRem: quotas.sick - sick, cRem: quotas.casual - casual };
+  const sickAllowance = quotas.sickMonthly ? quotas.sick / 12 : quotas.sick;
+  return { sick, casual, comp, sRem: Math.round((sickAllowance - sick) * 100) / 100, cRem: quotas.casual - casual };
 }
 
 export function countWeeklyOffAndHolidays(year, month, holidays) {
